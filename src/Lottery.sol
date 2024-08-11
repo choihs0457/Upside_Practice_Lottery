@@ -17,10 +17,9 @@ contract Lottery {
 
     constructor() {
         endTime = block.timestamp + 24 hours;
-        phase = Phase.Sell;
     }
 
-    modifier onlyOnece(uint16 ticketNum) {
+    modifier onlyOnce(uint16 ticketNum) {
         bool alreadyBought = false;
         for (uint i = 0; i < ticketHolders[ticketNum].length; i++) {
             if (ticketHolders[ticketNum][i] == msg.sender) {
@@ -56,7 +55,7 @@ contract Lottery {
         _;
     }
 
-    function buy(uint16 ticketNum) external payable onlyInTime() onlyOnece(ticketNum) onlySellPhase {
+    function buy(uint16 ticketNum) external payable onlyInTime() onlyOnce(ticketNum) onlySellPhase {
         require(msg.value == lotteryPrice, "Price error");
         ticketHolders[ticketNum].push(msg.sender);
     }
@@ -85,6 +84,7 @@ contract Lottery {
                 (bool success, ) = address(msg.sender).call{value: reward}("");
                 winnersCount -= 1;
                 if (winnersCount == 0){
+                    endTime = block.timestamp + 24;
                     phase = Phase.Sell;
                 }
                 require(success, "Transfer failed");
